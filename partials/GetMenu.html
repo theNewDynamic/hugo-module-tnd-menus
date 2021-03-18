@@ -1,10 +1,10 @@
 {{/*
   GetMenu
-  Retrieves a menu with given Menu name
+  Retrieves structured menu entries with a given menu identifier.
 
   @author @regisphilibert
 
-  @context Map (.)
+  @context Map | String (.)
     String (.menu)
     MenuEntry (.MenuEntry)
     Page (.Page)
@@ -22,8 +22,28 @@
       {{ something = . }}
     {{ end }}
 */}}
-{{ $menu := .menu }}
-{{ $Page := .Page }}
+
+{{/* Defaults Logic:
+  Context is a lone string, we use it for identifying the menu and use site.Home for .Page
+  Context is a Map with only a .Page, we use `main` as menu identifier
+*/}}
+{{ $menu := "main" }}
+{{ $Page := "" }}
+{{ if reflect.IsMap . }}
+  {{ with .menu }}
+    {{ $menu = . }}
+  {{ end }}
+  {{ with .Page }}
+    {{ $Page = . }}
+  {{ end }}
+{{ else }}
+  {{ $menu = . }}
+{{ end }}
+{{ with $Page}}{{ else }}
+  {{ $Page = site.Home }}
+  {{ partial "tnd-menus/warn" (printf "You have passed a Page when calling tnd-menus/GetMenu for `%s`, wel'll use the Homepage for reference" $menu) }}
+{{ end }}
+
 {{ $MenuEntries := slice }}
 {{ with index site.Menus $menu }}
   {{ range . }}
@@ -31,6 +51,8 @@
       {{ $MenuEntries = $MenuEntries | append . }}
     {{ end }}
   {{ end }}
+{{ else }}
+  {{ partial "tnd-menus/warn" (printf "Menu of name `%s`not found" $menu) }}
 {{ end }}
 
 {{ return $MenuEntries }}

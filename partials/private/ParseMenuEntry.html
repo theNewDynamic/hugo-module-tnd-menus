@@ -17,16 +17,13 @@
     Bool (.External)
     Bool (.Active)
     Page (.Page)
+    Int (.Level)
     Slice of maps (.Children)
-      ...Same
+      - ...self@returns
 
   @uses
      - tnd-menus/IsActive
 
-  @example - Go Template
-    {{ with partialCached "ParseMenuEntry" context context }}
-      {{ something = . }}
-    {{ end }}
 */}}
 
 {{ $s := newScratch }}
@@ -38,22 +35,30 @@
   {{ $s.SetInMap "data" "URL" . }}
 {{ end }}
 
+{{/* .Level is incremented each time the partial is used recursively */}}
 {{ $level := 1 }}
 {{ with .level }}
   {{ $level = add $level . }}
 {{ end }}
 {{ $s.SetInMap "data" "Level" $level }}
 
-{{ $MenuEntryPage := dict }}
+{{/* .External: Init a default for the bool */}}
 {{ $s.SetInMap "data" "External" true }}
+
+{{/* .Page is found through either the MenuEntry.Page or the MenuEntry.Params.page path */}}
+{{ $MenuEntryPage := dict }}
 {{ with .MenuEntry.Page }}
   {{ $MenuEntryPage = . }}
 {{ end }}
+
+{{/*.Params, while processing them we'll try and find a page matching a potential .Params.page */}}
 {{ with .MenuEntry.Params }}
   {{ range $key, $value := . }}
+    {{/* Regular params are added at the root of the Data. */}}
     {{ if ne $key "page" }}
       {{ $s.SetInMap "data" $key $value }}
     {{ else }}
+      {{/* This means we're on the .Params.page and try and find a Page. */}}
       {{ with site.GetPage . }}
         {{ $s.SetInMap "data" "URL" .RelPermalink }}
         {{ $MenuEntryPage = . }}
@@ -62,14 +67,17 @@
   {{ end }}
 {{ end }}
 
+{{/* If we found a .Page, we can add it and set External to false. */}}
 {{ with $MenuEntryPage }}
   {{ $s.SetInMap "data" "Page" . }}
   {{ $s.SetInMap "data" "External" false }}
 {{ end }}
 
+{{/* .Active is set using the public partial. Users can overwrite to pass their own logic. */}}
 {{ $active := partial "tnd-menus/IsActive" (dict "menu" $.menu "MenuEntry" $.MenuEntry "entry" ($s.Get "data") "Page" $.Page) }}
-
 {{ $s.SetInMap "data" "Active" $active }}
+
+{{/* .Children if found are recursively processed using this very same partial */}}
 {{ with .MenuEntry.Children }}
   {{ $children := slice }}
   {{ range . }}
@@ -78,5 +86,5 @@
   {{ $s.SetInMap "data" "Children" $children }}
 {{ end }}
 
-
+{{/* Return */}}
 {{ return $s.Get "data" }}
