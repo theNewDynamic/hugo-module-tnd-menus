@@ -1,0 +1,74 @@
+{{/*
+  ParseMenuEntry
+  Structure data for one menu MenuEntry
+
+  @author @regisphilibert
+
+  @context Map (.)
+    - String (.menu)
+    - Page (.Page)
+    - MenuMenuEntry (.MenuEntry)
+
+  @access private
+
+  @returns Map
+    String (.Name)
+    String (.Url)
+    Bool (.External)
+    Bool (.Active)
+    Page (.Page)
+    Slice of maps (.Children)
+      ...Same
+
+  @uses
+     - tnd-menus/IsActive
+
+  @example - Go Template
+    {{ with partialCached "ParseMenuEntry" context context }}
+      {{ something = . }}
+    {{ end }}
+*/}}
+
+{{ $s := newScratch }}
+{{ $s.Set "data" dict }}
+{{ $s.SetInMap "data" "Name" .MenuEntry.Name }}
+{{ $s.SetInMap "data" "URL" "" }}
+{{ with .MenuEntry.URL }}
+  {{ $s.SetInMap "data" "URL" . }}
+{{ end }}
+{{ $MenuEntryPage := dict }}
+{{ $s.SetInMap "data" "External" true }}
+{{ with .MenuEntry.Page }}
+  {{ $MenuEntryPage = . }}
+{{ end }}
+{{ with .MenuEntry.Params }}
+  {{ range $key, $value := . }}
+    {{ if ne $key "page" }}
+      {{ $s.SetInMap "data" $key $value }}
+    {{ else }}
+      {{ with site.GetPage . }}
+        {{ $s.SetInMap "data" "URL" .RelPermalink }}
+        {{ $MenuEntryPage = . }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ with $MenuEntryPage }}
+  {{ $s.SetInMap "data" "Page" . }}
+  {{ $s.SetInMap "data" "External" false }}
+{{ end }}
+
+{{ $active := partial "tnd-menus/IsActive" (dict "menu" $.menu "MenuEntry" $.MenuEntry "entry" ($s.Get "data") "Page" $.Page) }}
+
+{{ $s.SetInMap "data" "Active" $active }}
+{{ with .MenuEntry.Children }}
+  {{ $children := slice }}
+  {{ range . }}
+    {{ $children = $children | append (partial "tnd-menus/private/ParseMenuEntry" (dict "menu" $.menu "MenuEntry" . "Page" $.Page)) }}
+  {{ end }}
+  {{ $s.SetInMap "data" "Children" $children }}
+{{ end }}
+
+
+{{ return $s.Get "data" }}

@@ -1,0 +1,19 @@
+{{/*
+  IsActive
+  Public function to determine if a MenuEntry is active on a given project
+
+  @author @regisphilibert
+
+  @context Map (.)
+    Map (.entry)
+    Page (.)
+
+  @access public
+
+  @returns Bool
+
+*/}}
+{{ $active := true }}
+{{ $active = eq $.entry.URL .Page.RelPermalink | and $active }}
+
+{{ return $active }}

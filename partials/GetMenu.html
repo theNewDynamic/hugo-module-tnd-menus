@@ -1,0 +1,36 @@
+{{/*
+  GetMenu
+  Retrieves a menu with given Menu name
+
+  @author @regisphilibert
+
+  @context Map (.)
+    String (.menu)
+    MenuEntry (.MenuEntry)
+    Page (.Page)
+
+  @access private
+
+  @returns Slice of Maps
+    - See tnd-nav/private/ParseMenuEntry@returns
+
+  @uses
+     - tnd-menus/private/ParseMenuEntry
+
+  @example - Go Template
+    {{ with partialCached "GetMenu" context context }}
+      {{ something = . }}
+    {{ end }}
+*/}}
+{{ $menu := .menu }}
+{{ $Page := .Page }}
+{{ $MenuEntries := slice }}
+{{ with index site.Menus $menu }}
+  {{ range . }}
+    {{ with partial "tnd-menus/private/ParseMenuEntry" (dict "menu" $menu "MenuEntry" . "Page" $Page) }}
+      {{ $MenuEntries = $MenuEntries | append . }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ return $MenuEntries }}

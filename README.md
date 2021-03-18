@@ -1,8 +1,8 @@
 This is a template repo. To start.
 
-search `{moduleName}` through the project and replace it with the module identifier (ex: `socials` for `hugo-module-tnd-socials`)
+search `TND Nav` through the project and replace it with the module identifier (ex: `socials` for `hugo-module-tnd-socials`)
 
-# {moduleName} Hugo Module
+# Nav Hugo Module
 
 (intro)
 
@@ -10,7 +10,7 @@ search `{moduleName}` through the project and replace it with the module identif
 
 Requirements:
 - Go 1.14
-- Hugo 0.61.0
+- Hugo 0.64.0
 
 
 ## Installation
@@ -27,23 +27,35 @@ Configure your project's module to import this module:
 # config.yaml
 module:
   imports:
-  - path: github.com/theNewDynamic/hugo-module-tnd-{moduleName}
+  - path: github.com/theNewDynamic/hugo-module-tnd-nav
 ```
 
 ## Usage
 
-### Some Partial/Feature
+### tnd-nav/GetMenu
+
+Context is a Map:
+  - String (.menu)
+  - MenuEntry (.MenuEntry)
+  - Page (.Page)
 
 #### Examples
-
+```
+  {{ range partial "tnd-menus/GetMenu" $args }}
+    <a href="{{ .URL }}" class="MenuItem {{ if .Active }} MenuItem--active {{ end }}"
+    {{ if .External }} target="_blank"{{ end }}>
+    {{ .Name }}
+    </a>
+  {{ end }}
+```
 ### Settings
 
-Settings are added to the project's parameter under the `tnd_{moduleName}` map as shown below.
+Settings are added to the project's parameter under the `tnd_nav` map as shown below.
 
 ```yaml
 # config.yaml
 params:
-  tnd_{moduleName}:
+  tnd_nav:
     [...]
 ```
 
