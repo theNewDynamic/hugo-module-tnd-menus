@@ -27,12 +27,12 @@ Configure your project's module to import this module:
 # config.yaml
 module:
   imports:
-  - path: github.com/theNewDynamic/hugo-module-tnd-nav
+  - path: github.com/theNewDynamic/hugo-module-tnd-menus
 ```
 
 ## Usage
 
-### tnd-nav/GetMenu
+### tnd-menus/GetMenu
 
 Context is a Map:
   - String (.menu)
