@@ -31,11 +31,19 @@
 
 {{ $s := newScratch }}
 {{ $s.Set "data" dict }}
+
 {{ $s.SetInMap "data" "Name" .MenuEntry.Name }}
 {{ $s.SetInMap "data" "URL" "" }}
 {{ with .MenuEntry.URL }}
   {{ $s.SetInMap "data" "URL" . }}
 {{ end }}
+
+{{ $level := 1 }}
+{{ with .level }}
+  {{ $level = add $level . }}
+{{ end }}
+{{ $s.SetInMap "data" "Level" $level }}
+
 {{ $MenuEntryPage := dict }}
 {{ $s.SetInMap "data" "External" true }}
 {{ with .MenuEntry.Page }}
@@ -65,7 +73,7 @@
 {{ with .MenuEntry.Children }}
   {{ $children := slice }}
   {{ range . }}
-    {{ $children = $children | append (partial "tnd-menus/private/ParseMenuEntry" (dict "menu" $.menu "MenuEntry" . "Page" $.Page)) }}
+    {{ $children = $children | append (partial "tnd-menus/private/ParseMenuEntry" (dict "menu" $.menu "MenuEntry" . "Page" $.Page "level" $level)) }}
   {{ end }}
   {{ $s.SetInMap "data" "Children" $children }}
 {{ end }}
